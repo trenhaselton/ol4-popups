@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+    <meta charset="UTF-8">
+
+    <head>
+    <title>TM OL4</title>
+    <link rel="stylesheet" href="ol.css" type="text/css">
+    <script src="https://openlayers.org/en/v4.0.1/build/ol.js"></script>
+    <!-- <script src="static/js/ol/ol-trees.js" type="text/javascript"></script> -->
+    <style>
+        #tree-map {
+            height: 500px;
+            width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            border: solid black 1px;
+        }
+        .popup-content {
+         font-family: sans-serif;
+         font-size: 75%;
+         white-space: nowrap;
+        }
+        .popup-content .key {
+            font-weight: bold;
+            padding-right: 2px;
+        }
+
+        .ol-mouse-position {
+            background-color: white;
+        }
+
+        .ol-popup {
+         position: absolute;
+         background-color: white;
+         padding: 10px;
+         border-radius: 6px;
+         border: 1px solid #cccccc;
+         bottom: 12px;
+         left: -50px;
+        }
+        .ol-popup:after, .ol-popup:before {
+         top: 100%;
+         border: solid transparent;
+         content: " ";
+         height: 0;
+         width: 0;
+         position: absolute;
+         pointer-events: none;
+        }
+        .ol-popup:after {
+         border-top-color: white;
+         border-width: 10px;
+         left: 48px;
+         margin-left: -10px;
+        }
+        .ol-popup:before {
+         border-top-color: #cccccc;
+         border-width: 11px;
+         left: 48px;
+         margin-left: -11px;
+        }
+        .ol-popup-closer {
+         text-decoration: none;
+         color: green;
+         position: absolute;
+         top: 2px;
+         right: 8px;
+        }
+        .ol-popup-closer:after {
+         content: "✖";
+        }
+    </style>
+
+    </head>
+
+    <body>
+        <h2 style="text-align: center">Trees - OL4</h2>
+        <div id="tree-map" class="tree-map"></div>
+        <div id="popup" class="ol-popup">
+          <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+          <div id="popup-content"></div>
+        </div>
+
+        <script type="text/javascript">
+            function get_content_string(layer_title, feature) {
+                if (layer_title == 'trees') {
+                    return '<div class="popup-content"><table>' +
+                        '<tr><td class="key">Tree ID:</td><td>' + feature.get('objectid') + '</td></tr>' +
+                        '<tr><td class="key">Address:</td><td>' + feature.get('address') + '</td></tr>' +
+                        '<tr><td class="key">Common name:</td><td>' + feature.get('cname') + '</td></tr>' +
+                        '<tr><td class="key">Diameter:</td><td>' + feature.get('dbh') + '</td></tr>' +
+                        '<tr><td class="key">Health:</td><td>' + feature.get('health') + '</td></tr>' +
+                        '<tr><td class="key">Wires:</td><td>' + feature.get('wires') + '</td></tr>' +
+                        '<tr><td class="key">Planted:</td><td>' + (feature.get('planted') ? feature.get('planted') : '?') + '</td></tr>' +
+                        '</table></div>';
+                } else if (layer_title == 'space-city') {
+                    return '<div class="popup-content"><table>' +
+                        '<tr><td class="key">Space ID:</td><td>' + feature.get('objectid') + '</td></tr>' +
+                        '<tr><td class="key">Address:</td><td>' + feature.get('address') + '</td></tr>' +
+                        '<tr><td class="key">Strip width:</td><td>' + feature.get('strip') + '</td></tr>' +
+                        '<tr><td class="key">Wires:</td><td>' + feature.get('wires') + '</td></tr>' +
+                        '</table></div>';
+                } else if (layer_title == 'space-removed') {
+                    return '<div class="popup-content"><table>' +
+                        '<tr><td class="key">Space ID:</td><td>' + feature.get('objectid') + '</td></tr>' +
+                        '<tr><td class="key">Address:</td><td>' + feature.get('address') + '</td></tr>' +
+                        '<tr><td class="key">Strip width:</td><td>' + feature.get('strip') + '</td></tr>' +
+                        '<tr><td class="key">Wires:</td><td>' + feature.get('wires') + '</td></tr>' +
+                        '<tr><td class="key">Tree removed:</td><td>' + feature.get('cname') + '</td></tr>' +
+                        '<tr><td class="key">Year removed:</td><td>' + feature.get('removed') + '</td></tr>' +
+                        '</table>';
+                } else {
+                    return 'unrecognized layer title';
+                }
+            };
+
+            var spaceSource = new ol.source.Vector({
+                title: 'spaces',
+                url: 'static/layers/spaces.geojson',
+                format: new ol.format.GeoJSON()
+            });
+            var spaceStyle = new ol.style.Style({
+                    image: new ol.style.RegularShape({
+                    points: 4,
+                    rotation: Math.PI/4,
+                    fill: new ol.style.Fill({color: [255, 255, 255, 0.2]}),
+                    stroke: new ol.style.Stroke({color: 'black'}),
+                    radius: 5
+                })
+            });
+
+            var removedSource = new ol.source.Vector({
+                title: 'removed',
+                url: 'static/layers/spaces_removed.geojson',
+                format: new ol.format.GeoJSON()
+            });
+            var removedStyle = new ol.style.Style({
+                    image: new ol.style.RegularShape({
+                    points: 4,
+                    rotation: Math.PI/4,
+                    fill: new ol.style.Fill({color: [255, 255, 255, 0.2]}),
+                    stroke: new ol.style.Stroke({color: 'red'}),
+                    radius: 5
+                })
+            });
+
+            var treeSource = new ol.source.Vector({
+                title: 'trees',
+                url: 'static/layers/trees.geojson',
+                format: new ol.format.GeoJSON()
+            });
+            var treeStyle = new ol.style.Style({
+                    image: new ol.style.Circle({
+                    fill: new ol.style.Fill({color: 'darkgreen'}),
+                    stroke: new ol.style.Stroke({color: 'darkgreen'}),
+                    radius: 4
+                })
+            });
+
+            // popup elements
+            var container = document.getElementById('popup');
+            var content = document.getElementById('popup-content');
+            var closer = document.getElementById('popup-closer');
+
+            // Create an overlay to anchor the popup to the map.
+            var overlay = new ol.Overlay({
+                element: container,
+                autoPan: true,
+                autoPanAnimation: {duration: 150}
+            });
+
+            // handle the popup closer control
+            closer.onclick = function() {
+              overlay.setPosition(undefined);
+              closer.blur();
+              return false;
+            };
+
+            var map = new ol.Map({
+
+                view: new ol.View({
+                    center: ol.proj.fromLonLat([-122.62915, 45.47220]),   // center is lon/lat coordinates (EPSG:4326). Reprojected to Spherical Mercator (EPSG:3857).
+                    zoom: 17,
+                    minZoom: 15,
+                    maxZoom: 20
+                    }),
+
+                layers: [new ol.layer.Tile({source: new ol.source.OSM()}),
+                        new ol.layer.Vector({title: 'space-city', source: spaceSource, style: spaceStyle}),
+                        new ol.layer.Vector({title: 'space-removed', source: removedSource, style: removedStyle}),
+                        new ol.layer.Vector({title: 'trees', source: treeSource, style: treeStyle,})],
+
+                controls: ol.control.defaults({attributionOptions: {collapsible: true}}),
+
+                overlays: [overlay],
+
+                target: 'tree-map',
+            });
+
+            // change mouse cursor to pointer when over marker & handle marker clicks/taps
+            map.on('pointermove', function(e) {
+                var pixel = map.getEventPixel(e.originalEvent);
+                var hit = map.hasFeatureAtPixel(pixel);
+                map.getViewport().style.cursor = hit ? 'pointer' : '';
+            });
+
+            var hitTolerance = 0;
+            if (ol.has.TOUCH) {
+                hitTolerance = 5;
+            };
+            map.on('singleclick', function(evt) {
+                var feature = map.forEachFeatureAtPixel(evt.pixel,
+                    function(feature) {
+                        return feature;
+                    }, {hitTolerance: hitTolerance});
+
+                if (feature) {
+                    var coordinates = feature.getGeometry().getCoordinates();
+                    var pixel = map.getPixelFromCoordinate(coordinates);
+                    var layer = map.forEachLayerAtPixel(pixel, function(layer) {
+                        return layer;
+                    });
+                    content.innerHTML = get_content_string(layer.get('title'), feature);
+                    overlay.setPosition(coordinates);
+                }
+                else {
+                    overlay.setPosition(undefined);
+                    closer.blur();
+                }
+            });
+        </script>
+    </body>
+</html>

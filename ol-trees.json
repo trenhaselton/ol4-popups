@@ -1,0 +1,59 @@
+{
+  "exports": [
+    "ol.Map",
+    "ol.View",
+    "ol.source.OSM",
+    "ol.source.Vector",
+    "ol.format.GeoJSON",
+
+    "ol.proj.fromLonLat",
+    "ol.Map#on",
+    "ol.Map#getEventPixel",
+    "ol.Map#hasFeatureAtPixel",
+    "ol.Map#getViewport",
+    "ol.Map#forEachFeatureAtPixel",
+    "ol.Map#getPixelFromCoordinate",
+    "ol.Map#forEachLayerAtPixel",
+
+    "ol.Feature",
+    "ol.Feature#getGeometry",
+
+    "ol.has.TOUCH",
+
+    "ol.geom.Point",
+    "ol.geom.Point#getCoordinates",
+
+    "ol.style.Style",
+    "ol.style.RegularShape",
+    "ol.style.Circle",
+    "ol.style.Fill",
+    "ol.style.Stroke",
+
+    "ol.Overlay",
+    "ol.Overlay#setPosition",
+
+    "ol.layer.Tile",
+    "ol.layer.Vector",
+    "ol.control.defaults"
+ ],
+  "compile": {
+    "externs": [
+      "externs/closure-compiler.js",
+      "externs/geojson.js",
+      "externs/oli.js",
+      "externs/olx.js",
+      "externs/proj4js.js"
+    ],
+    "extra_annotation_name": [
+      "api", "observable"
+    ],
+    "define": [
+      "ol.ENABLE_WEBGL=false",
+      "ol.ENABLE_PROJ4JS=false",
+      "ol.ENABLE_RASTER_REPROJECTION=false"
+    ],
+    "compilation_level": "ADVANCED",
+    "manage_closure_dependencies": true,
+    "rewrite_polyfills": false
+  }
+}
