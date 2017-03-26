@@ -6,7 +6,7 @@ This is an example of how to get pop-ups with layer-dependent content working fo
 
 I spent a fair amount of time figuring out how to move from Openlayers 2 to 4.01 and thought that this example might save time for others with a similar need.  I've also included my script for an OL4 build.
 
-The starting point is the OpenLayers 4.01 example [Popups](http://openlayers.org/en/latest/examples/popup.html).
+The starting point is the OpenLayers example, [Popup](http://openlayers.org/en/latest/examples/popup.html).
 
 Two items to note for mobile devices:
 
