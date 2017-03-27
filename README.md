@@ -11,15 +11,15 @@ The starting point is the OpenLayers example, [Popup](http://openlayers.org/en/l
 Two items to note for mobile devices:
 
 1. Use ol.has.TOUCH to check for mobile devices.  If true,  the hitTolerance is bumped when checking the 'singleclick' event.
-```python
+```javascript
        var feature = map.forEachFeatureAtPixel(evt.pixel,
               function(feature) {
                   return feature;
               }, {hitTolerance: hitTolerance});
 ```
 
-2. The layer name is used to assemble the pop-up content.  When the hitTolerance is increased, the call to map.forEachLayerAtPixel() can fail because the event pixel may not be the feature pixel.  The fix is to use the feature coordinates instead.
-```python
+2. The layer title is used to assemble the pop-up content.  When the hitTolerance is increased, the call to map.forEachLayerAtPixel() can fail because the event pixel may not be the feature pixel.  The fix is to use the feature coordinates instead.
+```javascript
        var coordinates = feature.getGeometry().getCoordinates();
        var pixel = map.getPixelFromCoordinate(coordinates);
        var layer = map.forEachLayerAtPixel(pixel, function(layer) {
